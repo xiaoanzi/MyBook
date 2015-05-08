@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto">
+    <include layout="@layout/custom_toolbar" />
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_marginTop="66dp"-->
+        <!--android:layout_marginLeft="@dimen/cardview_margin"-->
+        <!--android:layout_marginRight="@dimen/cardview_margin"-->
+        <!--android:layout_marginBottom="@dimen/cardview_margin"-->
+        <!--android:orientation="vertical">-->
+
+        <com.melnykov.fab.ObservableScrollView
+            android:id="@+id/scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="56dp">
+        <include layout="@layout/bookinfo_layout_card_view"/>
+        </com.melnykov.fab.ObservableScrollView>
+        <com.melnykov.fab.FloatingActionButton
+            android:id="@+id/add_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_add_white_24dp"
+            fab:fab_colorNormal="@color/accent"
+            fab:fab_colorPressed="@color/accent_pressed"
+            fab:fab_colorRipple="@color/ripple"/>
+        <!--</LinearLayout>-->
+</FrameLayout>
