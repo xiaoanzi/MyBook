@@ -3,41 +3,28 @@ package com.app.mybook.ui;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import com.activeandroid.query.Select;
 import com.app.mybook.R;
-import com.app.mybook.api.Api;
-import com.app.mybook.model.AuthorUser;
 import com.app.mybook.model.BookListNote;
 import com.nineoldandroids.view.ViewPropertyAnimator;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by 王海 on 2015/4/15.
+ * Created by 王海 on 2015/5/13.
  */
-public class BookListNoteActivity extends ActionBarActivity implements SwipeRefreshLayout.OnRefreshListener{
-    private SwipeRefreshLayout swipeRefreshLayout;
+public class NoteCollect extends ActionBarActivity {
     RecyclerView mRecyclerView;
     View mHeader;
     private boolean mHeaderIsShown;
@@ -46,10 +33,8 @@ public class BookListNoteActivity extends ActionBarActivity implements SwipeRefr
     private int mFlexibleSpaceOffset;
 
     private List<BookListNote> bookListNoteList = new ArrayList<BookListNote>();
-    private RequestQueue mQueue;
     private Toolbar toolbar;
 
-    private String bookId = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,97 +42,27 @@ public class BookListNoteActivity extends ActionBarActivity implements SwipeRefr
         mHeaderIsShown = true;
         mFlexibleSpaceOffset = getResources().getDimensionPixelSize(R.dimen.header_height);
         initView();
-        mQueue = Volley.newRequestQueue(this);
-        setUpRecyclerView();
         getListAnnotation();
+        setUpRecyclerView();
     }
 
     public void initView(){
-        Intent intent1 = getIntent();
-        bookId = intent1.getStringExtra("bookId");
-
         mHeader = findViewById(R.id.tl_custom);
         mRecyclerView = (RecyclerView) findViewById(R.id.note_list);
         toolbar = (Toolbar) findViewById(R.id.tl_custom);
 
         toolbar = (Toolbar) findViewById(R.id.tl_custom);
         toolbar.setTitleTextColor(Color.parseColor("#ffffff")); //设置标题颜色
-        toolbar.setTitle(intent1.getStringExtra("title")+"的笔记");//设置Toolbar标题
+        toolbar.setTitle("收藏的评论");//设置Toolbar标题
         setSupportActionBar(toolbar);
         getSupportActionBar().getThemedContext();
         getSupportActionBar().setHomeButtonEnabled(true); //设置返回键可用
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        //下拉刷新部分
-        swipeRefreshLayout=(SwipeRefreshLayout) findViewById(R.id.swipe_container);
-        //设置卷内的颜色
-        swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light, android.R.color.holo_orange_light, android.R.color.holo_red_light);
-        //设置下拉刷新监听
-        swipeRefreshLayout.setOnRefreshListener(this);
-    }
-
-    @Override
-    public void onRefresh() {
-        hideHeader();
-        // TODO Auto-generated method stub
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                //停止刷新动画
-                getListAnnotation();
-            }
-        }, 5000);
     }
 
     public void getListAnnotation(){
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                Api.BOOK_INFO+bookId+Api.BOOK_LIST_NOTE+Api.BOOK_LIST_NOTE_FIELDS,
-                null,new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject jsonObject) {
-                bookListNoteList.clear();
-                jsonObjectBooks(jsonObject);
-                getData();
-                swipeRefreshLayout.setRefreshing(false);
-                showHeader();
-            }
-        },new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Log.e("TAG", volleyError.toString());
-                swipeRefreshLayout.setRefreshing(false);
-                showHeader();
-            }
-        });
-        mQueue.add(jsonObjectRequest);
-    }
-
-    public List<BookListNote> jsonObjectBooks(JSONObject jsonObject){
-        try {
-            JSONArray jsonArray = (jsonObject.getJSONArray("annotations"));
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject temp = jsonArray.getJSONObject(i);
-                BookListNote bookListNote = new BookListNote();
-                bookListNote.setBookListNoteId(temp.getString("id"));
-
-                JSONObject jsonUser = temp.getJSONObject("author_user");
-                AuthorUser authorUser = new AuthorUser();
-                authorUser.setName(jsonUser.getString("name"));
-                authorUser.setAvatar(jsonUser.getString("avatar"));
-                bookListNote.setAuthor_user(authorUser);
-
-                bookListNote.setChapter(temp.getString("chapter"));
-                bookListNote.setPage_no(temp.getString("page_no"));
-                bookListNote.setA_abstract(temp.getString("abstract"));
-                bookListNote.setTime(temp.getString("time"));
-                bookListNoteList.add(bookListNote);
-            }
-        }catch (Exception e){
-            Log.e("tag",e.toString());
-        }
-        return bookListNoteList;
+        bookListNoteList = new Select().from(BookListNote.class).execute();
     }
 
     private void setUpRecyclerView() {
@@ -169,7 +84,7 @@ public class BookListNoteActivity extends ActionBarActivity implements SwipeRefr
         mListAdapter.setOnItemClickListener(new MyListNoteAdapter.OnItemClickListener() {
             @Override
             public void onItemClickListener(BookListNote parent, View view, int position) {
-                Intent noteIntent = new Intent(BookListNoteActivity.this, BookNoteInfoActivity.class);
+                Intent noteIntent = new Intent(NoteCollect.this, BookNoteInfoActivity.class);
                 noteIntent.putExtra("noteInfo", parent);
                 startActivity(noteIntent);
             }
@@ -212,8 +127,6 @@ public class BookListNoteActivity extends ActionBarActivity implements SwipeRefr
     }
 
     private void getData() {
-        // should create a new Thread
-        // post
         mListAdapter.notifyDataSetChanged();
     }
 

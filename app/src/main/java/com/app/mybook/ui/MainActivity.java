@@ -26,7 +26,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private ListView lvLeftMenu;
-    private String[] lvs = {"我的收藏", "关于", "开源协议"};
+    private String[] lvs = {"收藏的图书", "收藏的评论", "关于"};
     private ArrayAdapter arrayAdapter;
     private ImageView ivMain;
     private Button buttonScanning;
@@ -63,14 +63,11 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(position == 0){
-//                    BookInfo bookInfo = new Select().from(BookInfo.class).executeSingle();
-//                    List<BookInfo> bookSearchList = new Select().from(BookInfo.class).execute();
-//                    Toast.makeText(MainActivity.this, "" + bookSearchList.get(0).getTitle(), Toast.LENGTH_LONG).show();
-                    Intent intent1 = new Intent(MainActivity.this, BookCollect.class);
-                    startActivity(intent1);
+                    Intent intentBook = new Intent(MainActivity.this, BookCollect.class);
+                    startActivity(intentBook);
                 }else if(position == 1){
-                    Toast.makeText(MainActivity.this, "第二行", Toast.LENGTH_LONG).show();
-
+                    Intent intentNote = new Intent(MainActivity.this, NoteCollect.class);
+                    startActivity(intentNote);
                 }else if(position == 2){
                     Toast.makeText(MainActivity.this, "第三行", Toast.LENGTH_LONG).show();
                 }

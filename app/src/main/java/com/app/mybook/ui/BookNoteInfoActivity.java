@@ -11,7 +11,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.activeandroid.ActiveAndroid;
+import com.activeandroid.query.Select;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -19,6 +22,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.app.mybook.R;
 import com.app.mybook.api.Api;
+import com.app.mybook.model.AuthorUser;
 import com.app.mybook.model.BookListNote;
 import com.app.mybook.util.MyImageLoader;
 import com.melnykov.fab.FloatingActionButton;
@@ -69,15 +73,43 @@ public class BookNoteInfoActivity extends ActionBarActivity {
             }
         });
         mQueue.add(jsonObjectRequest);
+        addNoteFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BookListNote bookListNoteTemp = new Select()
+                        .from(BookListNote.class)
+                        .where("bookListNoteId = ?", bookListNote.getBookListNoteId())
+                        .executeSingle();
+                if(bookListNoteTemp == null){
+                    AuthorUser authorUser = new AuthorUser();
+                    authorUser = bookListNote.getAuthor_user();
+                    ActiveAndroid.beginTransaction();
+                    try {
+                        authorUser.save();
+                        bookListNote.save();
+                        ActiveAndroid.setTransactionSuccessful();
+                        Toast.makeText(BookNoteInfoActivity.this, "已加入评论收藏", Toast.LENGTH_SHORT).show();
+                    }catch (Exception e){
+                        Toast.makeText(BookNoteInfoActivity.this, "加入失败，错误信息:"+e.toString(), Toast.LENGTH_LONG).show();
+                        Log.e("TAG",e.toString());
+                    }
+                    finally {
+                        ActiveAndroid.endTransaction();
+                    }
+                }else{
+                    Toast.makeText(BookNoteInfoActivity.this, "不能重复加入评论收藏哦~~", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
-    public BookListNote jsonObjectNote(JSONObject jsonObject){
+    public void jsonObjectNote(JSONObject jsonObject){
         try {
             bookListNote.setContent(jsonObject.getString("content"));
         }catch (Exception e){
             Log.e("tag",e.toString());
         }
-        return bookListNote;
+//        return bookListNote;
     }
 
     public void initView(){
@@ -87,7 +119,6 @@ public class BookNoteInfoActivity extends ActionBarActivity {
         toolbar = (Toolbar) findViewById(R.id.tl_custom);
         toolbar.setTitleTextColor(Color.parseColor("#ffffff")); //设置标题颜色
         toolbar.setTitle(bookListNote.getAuthor_user().getName());//设置Toolbar标题
-        toolbar.setTitleTextColor(Color.parseColor("#ffffff")); //设置标题颜色
         setSupportActionBar(toolbar);
         getSupportActionBar().getThemedContext();
         getSupportActionBar().setHomeButtonEnabled(true); //设置返回键可用

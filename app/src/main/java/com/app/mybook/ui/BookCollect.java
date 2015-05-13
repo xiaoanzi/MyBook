@@ -10,19 +10,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
-import android.widget.SearchView;
-import android.widget.Toast;
 
 import com.activeandroid.query.Select;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
 import com.app.mybook.R;
 import com.app.mybook.model.BookInfo;
-import com.app.mybook.model.BookSearch;
-import com.app.mybook.util.MyImageLoader;
-import com.app.mybook.util.MyJson;
 import com.nineoldandroids.view.ViewPropertyAnimator;
-import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,30 +25,20 @@ import java.util.List;
 public class BookCollect extends ActionBarActivity {
     RecyclerView mRecyclerView;
     View mHeader;
-    MyImageLoader myImageLoader = new MyImageLoader();
-    protected ImageLoader imageLoader = ImageLoader.getInstance();
-
-    private List<String> books = new ArrayList<String>();
-    private List<BookSearch> bookSearchList = new ArrayList<BookSearch>();
     private List<BookInfo> bookInfoList = new ArrayList<BookInfo>();
-    private RequestQueue mQueue;
     private int mFlexibleSpaceOffset;
     private MyListAdapter mListAdapter;
     private ArrayList<String> mDataList;
     private boolean mHeaderIsShown;
-    private SearchView searchView;
     private Toolbar toolbar;
-    MyJson myJson = new MyJson();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.custom_searchlayout);
         mFlexibleSpaceOffset = getResources().getDimensionPixelSize(R.dimen.header_height);
         initView();
-        mQueue = Volley.newRequestQueue(this);
         bookInfoList = new Select().from(BookInfo.class).execute();
         setUpRecyclerView();
-        Toast.makeText(BookCollect.this,""+bookInfoList.get(0).getTitle(),Toast.LENGTH_SHORT).show();
         getData();
     }
 
