@@ -20,7 +20,7 @@ import android.widget.Toast;
 import com.app.mybook.R;
 
 
-public class MainActivity extends ActionBarActivity implements View.OnClickListener{
+public class MainActivity extends ActionBarActivity implements View.OnClickListener,AdapterView.OnItemClickListener{
     //声明相关变量
     private Toolbar toolbar;
     private DrawerLayout mDrawerLayout;
@@ -35,7 +35,20 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findViews(); //获取控件
+        initViews();
+        initDrawerLayout();
+    }
+
+    //初始化控件
+    private void initViews() {
+        ivMain = (ImageView) findViewById(R.id.iv_main);
+        toolbar = (Toolbar) findViewById(R.id.tl_custom);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.dl_left);
+        lvLeftMenu = (ListView) findViewById(R.id.lv_left_menu);
+        buttonScanning = (Button) findViewById(R.id.drawerLayout_button_scanning);
+        buttonSearch = (Button) findViewById(R.id.drawerLayout_button_search);
+        buttonScanning.setOnClickListener(this);
+        buttonSearch.setOnClickListener(this);
         ivMain.setImageResource(R.drawable.zoumo);
         toolbar.setTitle("扫图书");//设置Toolbar标题
         toolbar.setTitleTextColor(Color.parseColor("#ffffff")); //设置标题颜色
@@ -43,6 +56,10 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         getSupportActionBar().getThemedContext();
         getSupportActionBar().setHomeButtonEnabled(true); //设置返回键可用
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    //抽屉菜单的相关设置
+    private void initDrawerLayout(){
         //创建返回键，并实现打开关/闭监听
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, 0, 0) {
             @Override
@@ -59,41 +76,19 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         //设置菜单列表
         arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, lvs);
         lvLeftMenu.setAdapter(arrayAdapter);
-        lvLeftMenu.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(position == 0){
-                    Intent intentBook = new Intent(MainActivity.this, BookCollect.class);
-                    startActivity(intentBook);
-                }else if(position == 1){
-                    Intent intentNote = new Intent(MainActivity.this, NoteCollect.class);
-                    startActivity(intentNote);
-                }else if(position == 2){
-                    Toast.makeText(MainActivity.this, "第三行", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-    }
-
-    private void findViews() {
-        ivMain = (ImageView) findViewById(R.id.iv_main);
-        toolbar = (Toolbar) findViewById(R.id.tl_custom);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.dl_left);
-        lvLeftMenu = (ListView) findViewById(R.id.lv_left_menu);
-        buttonScanning = (Button) findViewById(R.id.drawerLayout_button_scanning);
-        buttonSearch = (Button) findViewById(R.id.drawerLayout_button_search);
-        buttonScanning.setOnClickListener(this);
-        buttonSearch.setOnClickListener(this);
+        lvLeftMenu.setOnItemClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
+            //点击扫描按钮的监听
             case R.id.drawerLayout_button_scanning : {
                 Intent scanIntent = new Intent(MainActivity.this, CaptureActivity.class);
                 startActivity(scanIntent);
                 break;
             }
+            //点击搜索按钮的监听
             case R.id.drawerLayout_button_search : {
                 Intent searchIntent = new Intent(MainActivity.this, BookSearchActivity.class);
                 startActivity(searchIntent);
@@ -103,21 +98,37 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         }
     }
 
+    //抽屉菜单里面的ListView的监听方法
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        switch (position){
+            case 0: {
+                Intent intentBook = new Intent(MainActivity.this, BookCollect.class);
+                startActivity(intentBook);
+                break;
+            }
+            case 1 : {
+                Intent intentNote = new Intent(MainActivity.this, NoteCollect.class);
+                startActivity(intentNote);
+                break;
+            }
+            case 2 : {
+                Toast.makeText(MainActivity.this, "第三行", Toast.LENGTH_LONG).show();
+                break;
+            }
+            default:break;
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }

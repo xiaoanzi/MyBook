@@ -2,7 +2,7 @@ package com.app.mybook.util;
 
 import android.util.Log;
 
-import com.app.mybook.model.BookSearch;
+import com.app.mybook.model.BookInfo;
 import com.app.mybook.model.Rating;
 
 import org.json.JSONArray;
@@ -15,14 +15,15 @@ import java.util.List;
  * Created by 王海 on 2015/4/16.
  */
 public class MyJson {
-    private List<BookSearch> bookSearchList = new ArrayList<BookSearch>();
-    public List<BookSearch> jsonObjectBooks(JSONObject jsonObject){
+    public static List<BookInfo> bookSearchList = new ArrayList<BookInfo>();
+    public static BookInfo bookInfo = new BookInfo();
+    public static List<BookInfo> jsonObjectBooks(JSONObject jsonObject){
         try {
-            Log.e("tag", jsonObject.toString());
+            bookSearchList.clear();
             JSONArray jsonArray = (jsonObject.getJSONArray("books"));
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject temp = jsonArray.getJSONObject(i);
-                BookSearch bookSearch = new BookSearch();
+                BookInfo bookSearch = new BookInfo();
                 bookSearch.setBookSearchId(temp.getString("id"));
                 bookSearch.setTitle(temp.getString("title"));
 
@@ -56,9 +57,55 @@ public class MyJson {
                 bookSearchList.add(bookSearch);
             }
         }catch (Exception e){
-
-            Log.e("tag",e.toString());
+            Log.e("jsonObjectBooks",e.toString());
+            e.printStackTrace();
+            bookSearchList = null;
         }
         return bookSearchList;
+    }
+
+    public static BookInfo jsonObjectBookIsbn(JSONObject jsonObject){
+        try {
+            bookInfo.setIsbn13(jsonObject.get("isbn13").toString());
+            String tags = "";
+            JSONArray jsonArrayTemp = (jsonObject.getJSONArray("tags"));
+            for (int j = 0; j < jsonArrayTemp.length(); j++) {
+                JSONObject temp = jsonArrayTemp.getJSONObject(j);
+                tags += temp.getString("name");
+                if(j != jsonArrayTemp.length() - 1){
+                    tags += "、";
+                }
+            }
+            bookInfo.setTags(tags);
+            bookInfo.setPages(jsonObject.getString("pages"));
+            bookInfo.setAuthor_intro(jsonObject.getString("author_intro"));
+            bookInfo.setSummary(jsonObject.getString("summary"));
+            bookInfo.setCatalog(jsonObject.getString("catalog"));
+            bookInfo.setBookSearchId(jsonObject.get("id").toString());
+            bookInfo.setTitle(jsonObject.get("title").toString());
+            String acthor = "";
+            JSONArray jsonArrayTemp2 = (jsonObject.getJSONArray("author"));
+            for (int j = 0; j < jsonArrayTemp2.length(); j++) {
+                acthor += jsonArrayTemp2.get(j).toString();
+                if(j != jsonArrayTemp2.length() - 1){
+                    acthor += "、";
+                }
+            }
+            bookInfo.setAuthor(acthor);
+            bookInfo.setPublisher(jsonObject.get("publisher").toString());
+            bookInfo.setPubdate(jsonObject.get("pubdate").toString());
+            bookInfo.setPrice(jsonObject.get("price").toString());
+            bookInfo.setImage(jsonObject.get("image").toString());
+
+            JSONObject rating = jsonObject.getJSONObject("rating");
+            Rating rating1 = new Rating();
+            rating1.setNumRaters(rating.getString("numRaters"));
+            rating1.setAverage(rating.getString("average"));
+            bookInfo.setRating(rating1);
+        }catch (Exception e){
+            bookInfo = null;
+            Log.e("tag",e.toString());
+        }
+        return bookInfo;
     }
 }

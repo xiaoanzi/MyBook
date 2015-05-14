@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -21,13 +22,9 @@ import com.android.volley.toolbox.Volley;
 import com.app.mybook.R;
 import com.app.mybook.api.Api;
 import com.app.mybook.model.BookInfo;
-import com.app.mybook.model.Rating;
-import com.app.mybook.util.MyImageLoader;
 import com.app.mybook.util.MyJson;
 import com.nineoldandroids.view.ViewPropertyAnimator;
-import com.nostra13.universalimageloader.core.ImageLoader;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
@@ -41,11 +38,8 @@ import java.util.List;
 public class BookSearchActivity extends ActionBarActivity implements SearchView.OnQueryTextListener{
     RecyclerView mRecyclerView;
     View mHeader;
-    MyImageLoader myImageLoader = new MyImageLoader();
-    protected ImageLoader imageLoader = ImageLoader.getInstance();
-
-    private List<String> books = new ArrayList<String>();
     private List<BookInfo> bookSearchList = new ArrayList<BookInfo>();
+    private List<BookInfo> bookSearchListTemp = new ArrayList<BookInfo>();
     private RequestQueue mQueue;
     private int mFlexibleSpaceOffset;
     private MyListAdapter mListAdapter;
@@ -73,8 +67,6 @@ public class BookSearchActivity extends ActionBarActivity implements SearchView.
     //单击搜索按钮时激发该方法
     @Override
     public boolean onQueryTextSubmit(String query){
-
-        Log.e("tag", Api.BOOK_SEARCH+query+Api.BOOK_SEARCH_FIELDS);
         JsonObjectRequest jsonObjectRequest = null;
         try {
             jsonObjectRequest = new JsonObjectRequest(
@@ -82,16 +74,21 @@ public class BookSearchActivity extends ActionBarActivity implements SearchView.
                     null,new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject jsonObject) {
-                    Log.e("TAGgggg", jsonObject.toString());
-                    bookSearchList.clear();
-     //               bookSearchList = myJson.jsonObjectBooks(jsonObject);
-                    jsonObjectBooks(jsonObject);
-                    getData();
+                    bookSearchListTemp = myJson.jsonObjectBooks(jsonObject);
+                    if(bookSearchListTemp.size() != 0){
+                        bookSearchList.clear();
+                        bookSearchList.addAll(bookSearchListTemp);
+                        getData();
+                    }else{
+                        Toast.makeText(BookSearchActivity.this,"没有搜索到结果",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                 }
             },new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError volleyError) {
                     Log.e("TAG", volleyError.toString());
+                    Toast.makeText(BookSearchActivity.this,"数据获取失败，请检查网络设置",Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (UnsupportedEncodingException e) {
@@ -99,51 +96,6 @@ public class BookSearchActivity extends ActionBarActivity implements SearchView.
         }
         mQueue.add(jsonObjectRequest);
         return true;
-    }
-
-    public List<BookInfo> jsonObjectBooks(JSONObject jsonObject){
-        try {
-            JSONArray jsonArray = (jsonObject.getJSONArray("books"));
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject temp = jsonArray.getJSONObject(i);
-                BookInfo bookSearch = new BookInfo();
-                bookSearch.setBookSearchId(temp.getString("id"));
-                bookSearch.setTitle(temp.getString("title"));
-
-                String acthor = "";
-                JSONArray jsonArrayTemp = (temp.getJSONArray("author"));
-                for (int j = 0; j < jsonArrayTemp.length(); j++) {
-                    acthor += jsonArrayTemp.get(j).toString();
-                    if(j != jsonArrayTemp.length() - 1){
-                        acthor += "、";
-                    }
-                }
-                bookSearch.setAuthor(acthor);
-                bookSearch.setPublisher(temp.getString("publisher"));
-                bookSearch.setPubdate(temp.getString("pubdate"));
-                bookSearch.setPrice(temp.getString("price"));
-                bookSearch.setImage(temp.getString("image"));
-                String translator = "";
-                JSONArray translatorTemp = (temp.getJSONArray("translator"));
-                for (int k = 0; k < translatorTemp.length(); k++) {
-                    acthor += translatorTemp.get(k).toString();
-                    if(k != translatorTemp.length() - 1){
-                        translator += "、";
-                    }
-                }
-                bookSearch.setTranslator(translator);
-                JSONObject rating = temp.getJSONObject("rating");
-                Rating rating1 = new Rating();
-                rating1.setNumRaters(rating.getString("numRaters"));
-                rating1.setAverage(rating.getString("average"));
-                bookSearch.setRating(rating1);
-                bookSearchList.add(bookSearch);
-            }
-        }catch (Exception e){
-            Log.e("jsonObjectBooks",e.toString());
-            e.printStackTrace();
-        }
-        return bookSearchList;
     }
 
     private void initView() {
@@ -221,12 +173,10 @@ public class BookSearchActivity extends ActionBarActivity implements SearchView.
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        getData();
     }
 
+    //通知RecyclerView数据发生改变，然后改变页面显示
     private void getData() {
-        // should create a new Thread
-        // post
         mListAdapter.notifyDataSetChanged();
     }
 
@@ -263,7 +213,6 @@ public class BookSearchActivity extends ActionBarActivity implements SearchView.
             finish();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 }

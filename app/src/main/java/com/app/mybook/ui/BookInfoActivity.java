@@ -24,24 +24,22 @@ import com.android.volley.toolbox.Volley;
 import com.app.mybook.R;
 import com.app.mybook.api.Api;
 import com.app.mybook.model.BookInfo;
-import com.app.mybook.model.BookSearch;
 import com.app.mybook.model.Rating;
 import com.app.mybook.util.MyImageLoader;
+import com.app.mybook.util.MyJson;
 import com.melnykov.fab.FloatingActionButton;
 import com.melnykov.fab.ObservableScrollView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
  * Created by 王海 on 2015/4/16.
  */
-public class BookInfoActivity extends ActionBarActivity {
+public class BookInfoActivity extends ActionBarActivity implements View.OnClickListener{
     private Toolbar toolbar;
     private BookInfo bookInfo = new BookInfo();
-    private BookSearch bookSearch = new BookSearch();
     private RequestQueue mQueue;
     private MyImageLoader myImageLoader;
 
@@ -75,22 +73,25 @@ public class BookInfoActivity extends ActionBarActivity {
         isIsbn = getIntent().getBooleanExtra("isIsbn",false);
         initView();
         initIntent();
-        note_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        note_button.setOnClickListener(this);
+        addBookFab.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.card_button_note : {
                 Intent noteIntent = new Intent(BookInfoActivity.this, BookListNoteActivity.class);
                 noteIntent.putExtra("bookId",bookInfo.getBookSearchId());
                 noteIntent.putExtra("title",bookInfo.getTitle());
                 startActivity(noteIntent);
+                break;
             }
-        });
-        addBookFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            case R.id.add_fab : {
                 BookInfo bookInfoTemp = new Select()
-                                        .from(BookInfo.class)
-                                        .where("bookSearchId = ?", bookInfo.getBookSearchId())
-                                        .executeSingle();
+                        .from(BookInfo.class)
+                        .where("bookSearchId = ?", bookInfo.getBookSearchId())
+                        .executeSingle();
                 if(bookInfoTemp == null){
                     Rating rating = new Rating();
                     rating = bookInfo.getRating();
@@ -110,8 +111,10 @@ public class BookInfoActivity extends ActionBarActivity {
                 }else{
                     Toast.makeText(BookInfoActivity.this, "不能重复加入收藏哦~~", Toast.LENGTH_SHORT).show();
                 }
+                break;
             }
-        });
+            default:break;
+        }
     }
 
     public void initView(){
@@ -142,98 +145,35 @@ public class BookInfoActivity extends ActionBarActivity {
         addBookFab.attachToScrollView(scrollView);
     }
 
+    //判断是从搜索页面跳转过来的还是扫描页面跳转过来的
     public void initIntent(){
         if(!isIsbn){
             bookInfo = (BookInfo)getIntent().getSerializableExtra("bookInfo");
-/*            bookInfo.setBookSearchId(bookSearch.getBookSearchId());
-            bookInfo.setTitle(bookSearch.getTitle());
-            bookInfo.setAuthor(bookSearch.getAuthor());
-            bookInfo.setPublisher(bookSearch.getPublisher());
-            bookInfo.setPubdate(bookSearch.getPubdate());
-            bookInfo.setPrice(bookSearch.getPrice());
-            bookInfo.setRating(bookSearch.getRating());
-            bookInfo.setImage(bookSearch.getImage());*/
-            loadBookInfo(Api.BOOK_INFO+bookInfo.getBookSearchId()+Api.BOOK_INFO_FIELDS);
+            loadBookInfo(Api.BOOK_INFO+bookInfo.getBookSearchId()+Api.BOOK_INFO_FIELDS_ISBN);
         }else{
             isbn = (String)getIntent().getSerializableExtra("isbn");
             loadBookInfo(Api.BOOK_INFO_ISBN+isbn+Api.BOOK_INFO_FIELDS_ISBN);
         }
     }
 
+    //加载图书信息
     public void loadBookInfo(String url){
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url,
                 null,new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject jsonObject) {
-                if(isIsbn){
-                    jsonObjectBookIsbn(jsonObject);
-                }
-                jsonObjectBook(jsonObject);
+                bookInfo = MyJson.jsonObjectBookIsbn(jsonObject);
                 toolbar.setTitle(bookInfo.getTitle());//设置Toolbar标题
                 changceView();
             }
         },new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
+                Toast.makeText(BookInfoActivity.this, "获取信息失败，请检查网络连接",Toast.LENGTH_SHORT).show();
                 Log.e("TAG", volleyError.toString());
             }
         });
         mQueue.add(jsonObjectRequest);
-    }
-
-    public void jsonObjectBook(JSONObject jsonObject){
-        try {
-            bookInfo.setIsbn13(jsonObject.get("isbn13").toString());
-            String tags = "";
-            JSONArray jsonArrayTemp = (jsonObject.getJSONArray("tags"));
-            for (int j = 0; j < jsonArrayTemp.length(); j++) {
-                JSONObject temp = jsonArrayTemp.getJSONObject(j);
-                tags += temp.getString("name");
-                if(j != jsonArrayTemp.length() - 1){
-                    tags += "、";
-                }
-            }
-            bookInfo.setTags(tags);
-            bookInfo.setPages(jsonObject.getString("pages"));
-            bookInfo.setAuthor_intro(jsonObject.getString("author_intro"));
-            bookInfo.setSummary(jsonObject.getString("summary"));
-            bookInfo.setCatalog(jsonObject.getString("catalog"));
-
-        }catch (Exception e){
-
-            Log.e("tag",e.toString());
-        }
-//        return bookInfo;
-    }
-
-    public void jsonObjectBookIsbn(JSONObject jsonObject){
-        try {
-            bookInfo.setBookSearchId(jsonObject.get("id").toString());
-            bookInfo.setTitle(jsonObject.get("title").toString());
-            String acthor = "";
-            JSONArray jsonArrayTemp = (jsonObject.getJSONArray("author"));
-            for (int j = 0; j < jsonArrayTemp.length(); j++) {
-                acthor += jsonArrayTemp.get(j).toString();
-                if(j != jsonArrayTemp.length() - 1){
-                    acthor += "、";
-                }
-            }
-            bookInfo.setAuthor(acthor);
-            bookInfo.setPublisher(jsonObject.get("publisher").toString());
-            bookInfo.setPubdate(jsonObject.get("pubdate").toString());
-            bookInfo.setPrice(jsonObject.get("price").toString());
-            bookInfo.setImage(jsonObject.get("image").toString());
-
-            JSONObject rating = jsonObject.getJSONObject("rating");
-            Rating rating1 = new Rating();
-            rating1.setNumRaters(rating.getString("numRaters"));
-            rating1.setAverage(rating.getString("average"));
-            bookInfo.setRating(rating1);
-
-        }catch (Exception e){
-            Log.e("tag",e.toString());
-        }
-//        return bookInfo;
     }
 
     public void changceView(){
