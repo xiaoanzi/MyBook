@@ -2,7 +2,9 @@ package com.app.mybook.util;
 
 import android.util.Log;
 
+import com.app.mybook.model.AuthorUser;
 import com.app.mybook.model.BookInfo;
+import com.app.mybook.model.BookListNote;
 import com.app.mybook.model.Rating;
 
 import org.json.JSONArray;
@@ -17,6 +19,10 @@ import java.util.List;
 public class MyJson {
     public static List<BookInfo> bookSearchList = new ArrayList<BookInfo>();
     public static BookInfo bookInfo = new BookInfo();
+    public static Rating rating1 = new Rating();
+    public static List<BookListNote> bookListNoteList = new ArrayList<BookListNote>();
+
+    //解析搜索图书返回回来的数据
     public static List<BookInfo> jsonObjectBooks(JSONObject jsonObject){
         try {
             bookSearchList.clear();
@@ -50,7 +56,6 @@ public class MyJson {
                 }
                 bookSearch.setTranslator(translator);
                 JSONObject rating = temp.getJSONObject("rating");
-                Rating rating1 = new Rating();
                 rating1.setNumRaters(rating.getString("numRaters"));
                 rating1.setAverage(rating.getString("average"));
                 bookSearch.setRating(rating1);
@@ -64,8 +69,10 @@ public class MyJson {
         return bookSearchList;
     }
 
+    //解析某本图书具体信息返回回来的数据
     public static BookInfo jsonObjectBookIsbn(JSONObject jsonObject){
         try {
+//            bookInfo.setCode(jsonObject.get("code").toString());
             bookInfo.setIsbn13(jsonObject.get("isbn13").toString());
             String tags = "";
             JSONArray jsonArrayTemp = (jsonObject.getJSONArray("tags"));
@@ -98,7 +105,6 @@ public class MyJson {
             bookInfo.setImage(jsonObject.get("image").toString());
 
             JSONObject rating = jsonObject.getJSONObject("rating");
-            Rating rating1 = new Rating();
             rating1.setNumRaters(rating.getString("numRaters"));
             rating1.setAverage(rating.getString("average"));
             bookInfo.setRating(rating1);
@@ -107,5 +113,34 @@ public class MyJson {
             Log.e("tag",e.toString());
         }
         return bookInfo;
+    }
+
+    //解析某本图书的的笔记列表返回回来的的数据
+    public List<BookListNote> jsonObjectNotes(JSONObject jsonObject){
+        try {
+            bookListNoteList.clear();
+            JSONArray jsonArray = (jsonObject.getJSONArray("annotations"));
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject temp = jsonArray.getJSONObject(i);
+                BookListNote bookListNote = new BookListNote();
+                bookListNote.setBookListNoteId(temp.getString("id"));
+
+                JSONObject jsonUser = temp.getJSONObject("author_user");
+                AuthorUser authorUser = new AuthorUser();
+                authorUser.setName(jsonUser.getString("name"));
+                authorUser.setAvatar(jsonUser.getString("avatar"));
+                bookListNote.setAuthor_user(authorUser);
+
+                bookListNote.setChapter(temp.getString("chapter"));
+                bookListNote.setPage_no(temp.getString("page_no"));
+                bookListNote.setA_abstract(temp.getString("abstract"));
+                bookListNote.setTime(temp.getString("time"));
+                bookListNoteList.add(bookListNote);
+            }
+        }catch (Exception e){
+            bookListNoteList = null;
+            Log.e("tag",e.toString());
+        }
+        return bookListNoteList;
     }
 }

@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -23,11 +24,10 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.app.mybook.R;
 import com.app.mybook.api.Api;
-import com.app.mybook.model.AuthorUser;
 import com.app.mybook.model.BookListNote;
+import com.app.mybook.util.MyJson;
 import com.nineoldandroids.view.ViewPropertyAnimator;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -40,6 +40,7 @@ public class BookListNoteActivity extends ActionBarActivity implements SwipeRefr
     private SwipeRefreshLayout swipeRefreshLayout;
     RecyclerView mRecyclerView;
     View mHeader;
+    MyJson myJson = new MyJson();
     private boolean mHeaderIsShown;
     private MyListNoteAdapter mListAdapter;
     private ArrayList<String> mDataList;
@@ -50,19 +51,29 @@ public class BookListNoteActivity extends ActionBarActivity implements SwipeRefr
     private Toolbar toolbar;
 
     private String bookId = "";
+    private int pageNmber = 0;//已经加载了的评论数量
+    private int count = 20;//每次加载的评论条数
+    private int pageTotal = 0;//笔记的总数
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.custom_list_notelayout);
         mHeaderIsShown = true;
         mFlexibleSpaceOffset = getResources().getDimensionPixelSize(R.dimen.header_height);
-        initView();
         mQueue = Volley.newRequestQueue(this);
+        initViews();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                hideHeader();
+                swipeRefreshLayout.setRefreshing(true);
+                getListAnnotation(0,count);
+            }
+        }, 1000);
         setUpRecyclerView();
-        getListAnnotation();
     }
 
-    public void initView(){
+    public void initViews(){
         Intent intent1 = getIntent();
         bookId = intent1.getStringExtra("bookId");
 
@@ -87,31 +98,35 @@ public class BookListNoteActivity extends ActionBarActivity implements SwipeRefr
         swipeRefreshLayout.setOnRefreshListener(this);
     }
 
+    //下拉刷新执行的方法
     @Override
     public void onRefresh() {
+        pageNmber = 0;
         hideHeader();
-        // TODO Auto-generated method stub
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                //停止刷新动画
-                getListAnnotation();
-            }
-        }, 5000);
+        getListAnnotation(0,count);
     }
 
-    public void getListAnnotation(){
+    //获取笔记信息
+    public void getListAnnotation(int satar,int count){
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                Api.BOOK_INFO+bookId+Api.BOOK_LIST_NOTE+Api.BOOK_LIST_NOTE_FIELDS,
+                Api.BOOK_INFO+bookId+Api.BOOK_LIST_NOTE+Api.BOOK_LIST_NOTE_FIELDS+"&start="+satar+"&count="+count,
                 null,new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject jsonObject) {
-                bookListNoteList.clear();
-                jsonObjectBooks(jsonObject);
+                if (pageNmber == 0)
+                    bookListNoteList.clear();
+                bookListNoteList.addAll(myJson.jsonObjectNotes(jsonObject));
+                if(bookListNoteList.size() == 0){
+                    Toast.makeText(BookListNoteActivity.this, "当前图书无读书笔记",Toast.LENGTH_SHORT).show();
+                    BookListNoteActivity.this.finish();
+                }
                 getData();
+                pageTotal = jsonObject.optInt("total");
                 swipeRefreshLayout.setRefreshing(false);
                 showHeader();
+                pageNmber = bookListNoteList.size();
+                if (pageNmber == pageTotal)
+                    Toast.makeText(BookListNoteActivity.this, "没有更多的笔记了",Toast.LENGTH_SHORT).show();
             }
         },new Response.ErrorListener() {
             @Override
@@ -119,39 +134,14 @@ public class BookListNoteActivity extends ActionBarActivity implements SwipeRefr
                 Log.e("TAG", volleyError.toString());
                 swipeRefreshLayout.setRefreshing(false);
                 showHeader();
+                Toast.makeText(BookListNoteActivity.this, "获取信息失败，请检查网络连接", Toast.LENGTH_SHORT).show();
             }
         });
         mQueue.add(jsonObjectRequest);
     }
 
-    public List<BookListNote> jsonObjectBooks(JSONObject jsonObject){
-        try {
-            JSONArray jsonArray = (jsonObject.getJSONArray("annotations"));
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject temp = jsonArray.getJSONObject(i);
-                BookListNote bookListNote = new BookListNote();
-                bookListNote.setBookListNoteId(temp.getString("id"));
-
-                JSONObject jsonUser = temp.getJSONObject("author_user");
-                AuthorUser authorUser = new AuthorUser();
-                authorUser.setName(jsonUser.getString("name"));
-                authorUser.setAvatar(jsonUser.getString("avatar"));
-                bookListNote.setAuthor_user(authorUser);
-
-                bookListNote.setChapter(temp.getString("chapter"));
-                bookListNote.setPage_no(temp.getString("page_no"));
-                bookListNote.setA_abstract(temp.getString("abstract"));
-                bookListNote.setTime(temp.getString("time"));
-                bookListNoteList.add(bookListNote);
-            }
-        }catch (Exception e){
-            Log.e("tag",e.toString());
-        }
-        return bookListNoteList;
-    }
-
     private void setUpRecyclerView() {
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(linearLayoutManager);
         mDataList = new ArrayList<>();
@@ -188,6 +178,16 @@ public class BookListNoteActivity extends ActionBarActivity implements SwipeRefr
                         if (isIdle) {
                             mScrollY = 0;
                         }
+                        //判断是否滚动到底部
+                        if (linearLayoutManager.findLastCompletelyVisibleItemPosition() == (linearLayoutManager.getItemCount() - 1)) {
+                            if (pageNmber == pageTotal){
+                                Toast.makeText(BookListNoteActivity.this, "没有更多的笔记了",Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            swipeRefreshLayout.setRefreshing(true);
+                            getListAnnotation(pageNmber,count);
+                        }
+                        return;
                     }
 
                     @Override
@@ -208,12 +208,9 @@ public class BookListNoteActivity extends ActionBarActivity implements SwipeRefr
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-
     }
 
     private void getData() {
-        // should create a new Thread
-        // post
         mListAdapter.notifyDataSetChanged();
     }
 

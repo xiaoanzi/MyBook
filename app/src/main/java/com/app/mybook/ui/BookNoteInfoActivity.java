@@ -70,6 +70,7 @@ public class BookNoteInfoActivity extends ActionBarActivity {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 Log.e("TAG", volleyError.toString());
+                Toast.makeText(BookNoteInfoActivity.this, "获取信息失败，请检查网络连接", Toast.LENGTH_SHORT).show();
             }
         });
         mQueue.add(jsonObjectRequest);
@@ -109,7 +110,6 @@ public class BookNoteInfoActivity extends ActionBarActivity {
         }catch (Exception e){
             Log.e("tag",e.toString());
         }
-//        return bookListNote;
     }
 
     public void initView(){

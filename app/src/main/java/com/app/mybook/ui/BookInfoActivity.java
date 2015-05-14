@@ -42,6 +42,7 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
     private BookInfo bookInfo = new BookInfo();
     private RequestQueue mQueue;
     private MyImageLoader myImageLoader;
+    MyJson myJson = new MyJson();
 
     private FloatingActionButton addBookFab;
     private ObservableScrollView scrollView;
@@ -162,15 +163,17 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
                 null,new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject jsonObject) {
-                bookInfo = MyJson.jsonObjectBookIsbn(jsonObject);
-                toolbar.setTitle(bookInfo.getTitle());//设置Toolbar标题
-                changceView();
+                bookInfo = myJson.jsonObjectBookIsbn(jsonObject);
+//                    Toast.makeText(BookInfoActivity.this, "图书不存在",Toast.LENGTH_SHORT).show();
+                    toolbar.setTitle(bookInfo.getTitle());//设置Toolbar标题
+                    changceView();
             }
         },new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                Toast.makeText(BookInfoActivity.this, "获取信息失败，请检查网络连接",Toast.LENGTH_SHORT).show();
+                Toast.makeText(BookInfoActivity.this, "图书不存在或无网络连接",Toast.LENGTH_LONG).show();
                 Log.e("TAG", volleyError.toString());
+                BookInfoActivity.this.finish();
             }
         });
         mQueue.add(jsonObjectRequest);
