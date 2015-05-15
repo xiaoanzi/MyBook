@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -22,6 +23,7 @@ import com.android.volley.toolbox.Volley;
 import com.app.mybook.R;
 import com.app.mybook.api.Api;
 import com.app.mybook.model.BookInfo;
+import com.app.mybook.util.KeyboardUtils;
 import com.app.mybook.util.MyJson;
 import com.nineoldandroids.view.ViewPropertyAnimator;
 
@@ -47,6 +49,7 @@ public class BookSearchActivity extends ActionBarActivity implements SearchView.
     private boolean mHeaderIsShown;
     private SearchView searchView;
     private Toolbar toolbar;
+    private ProgressBar progressBar_search;
     MyJson myJson = new MyJson();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +70,8 @@ public class BookSearchActivity extends ActionBarActivity implements SearchView.
     //单击搜索按钮时激发该方法
     @Override
     public boolean onQueryTextSubmit(String query){
+        KeyboardUtils.closeKeyBoard(BookSearchActivity.this);
+        progressBar_search.setVisibility(View.VISIBLE);
         JsonObjectRequest jsonObjectRequest = null;
         try {
             jsonObjectRequest = new JsonObjectRequest(
@@ -79,8 +84,10 @@ public class BookSearchActivity extends ActionBarActivity implements SearchView.
                         bookSearchList.clear();
                         bookSearchList.addAll(bookSearchListTemp);
                         getData();
+                        progressBar_search.setVisibility(View.GONE);
                     }else{
                         Toast.makeText(BookSearchActivity.this,"没有搜索到结果",Toast.LENGTH_SHORT).show();
+                        progressBar_search.setVisibility(View.GONE);
                         return;
                     }
                 }
@@ -88,6 +95,7 @@ public class BookSearchActivity extends ActionBarActivity implements SearchView.
                 @Override
                 public void onErrorResponse(VolleyError volleyError) {
                     Log.e("TAG", volleyError.toString());
+                    progressBar_search.setVisibility(View.GONE);
                     Toast.makeText(BookSearchActivity.this,"数据获取失败，请检查网络设置",Toast.LENGTH_SHORT).show();
                 }
             });
@@ -104,11 +112,13 @@ public class BookSearchActivity extends ActionBarActivity implements SearchView.
         toolbar = (Toolbar) findViewById(R.id.tl_custom);
 
         searchView = (SearchView) findViewById(R.id.searchlayout_searchview);
+        searchView.setVisibility(View.VISIBLE);
         searchView.setIconifiedByDefault(false);//设置该搜索框默认是否自动缩小为图标。
         searchView.setSubmitButtonEnabled(true);//设置是否显示搜索按钮。
         searchView.setQueryHint("请输入图书名");//设置搜索框内默认显示的提示文本。
         searchView.setOnQueryTextListener(this);
-        searchView.setVisibility(View.VISIBLE);
+
+        progressBar_search = (ProgressBar) findViewById(R.id.progressBar_search);
 
         toolbar.setTitleTextColor(Color.parseColor("#ffffff")); //设置标题颜色
         setSupportActionBar(toolbar);

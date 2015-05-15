@@ -24,13 +24,21 @@
                 android:layout_height="match_parent"
                 android:text="扫一扫"
                 android:layout_weight="1"
-                android:id="@+id/drawerLayout_button_scanning"/>
+                android:id="@+id/drawerLayout_button_scanning"
+                android:background="@color/dim_foreground_disabled_material_dark"/>
+
+                <ImageView
+                    android:layout_width="2px"
+                    android:background="#000"
+                    android:layout_height="match_parent" />
+
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="搜一搜"
                 android:layout_weight="1"
-                android:id="@+id/drawerLayout_button_search"/>
+                android:id="@+id/drawerLayout_button_search"
+                android:background="@color/dim_foreground_disabled_material_dark"/>
         </LinearLayout>
     </LinearLayout>
     <!--侧滑菜单-->

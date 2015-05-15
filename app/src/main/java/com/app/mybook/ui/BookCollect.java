@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.Toast;
 
 import com.activeandroid.query.Select;
 import com.app.mybook.R;
@@ -38,8 +39,12 @@ public class BookCollect extends ActionBarActivity {
         mFlexibleSpaceOffset = getResources().getDimensionPixelSize(R.dimen.header_height);
         initView();
         bookInfoList = new Select().from(BookInfo.class).execute();
+
         setUpRecyclerView();
-        getData();
+        if(bookInfoList.size() == 0) {
+            Toast.makeText(BookCollect.this,"没有收藏的图书",Toast.LENGTH_SHORT).show();
+            return;
+        }
     }
 
     private void initView() {
@@ -111,12 +116,9 @@ public class BookCollect extends ActionBarActivity {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        getData();
     }
 
     private void getData() {
-        // should create a new Thread
-        // post
         mListAdapter.notifyDataSetChanged();
     }
 

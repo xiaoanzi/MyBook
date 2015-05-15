@@ -5,20 +5,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fab="http://schemas.android.com/apk/res-auto">
     <include layout="@layout/custom_toolbar" />
-    <!--<LinearLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_marginTop="66dp"-->
-        <!--android:layout_marginLeft="@dimen/cardview_margin"-->
-        <!--android:layout_marginRight="@dimen/cardview_margin"-->
-        <!--android:layout_marginBottom="@dimen/cardview_margin"-->
-        <!--android:orientation="vertical">-->
-
         <com.melnykov.fab.ObservableScrollView
             android:id="@+id/scroll_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="56dp">
+            android:layout_marginTop="56dp"
+            android:visibility="invisible">
         <include layout="@layout/bookinfo_layout_card_view"/>
         </com.melnykov.fab.ObservableScrollView>
         <com.melnykov.fab.FloatingActionButton
@@ -31,5 +23,12 @@
             fab:fab_colorNormal="@color/accent"
             fab:fab_colorPressed="@color/accent_pressed"
             fab:fab_colorRipple="@color/ripple"/>
-        <!--</LinearLayout>-->
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+    <!--</LinearLayout>-->
 </FrameLayout>

@@ -157,7 +157,11 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="读书笔记"
-                    android:id="@+id/card_button_note"/>
+                    android:id="@+id/card_button_note"
+                    android:background="@color/accent"
+                    android:textColor="@color/abc_primary_text_disable_only_material_dark"
+                    android:layout_margin="6dp"
+                    android:shadowColor="@color/button_material_light"/>
             </LinearLayout>
         </LinearLayout>
 

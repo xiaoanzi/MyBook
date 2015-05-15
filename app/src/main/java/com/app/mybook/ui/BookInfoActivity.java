@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +45,7 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
     private MyImageLoader myImageLoader;
     MyJson myJson = new MyJson();
 
+    private ProgressBar progressBar;
     private FloatingActionButton addBookFab;
     private ObservableScrollView scrollView;
     private TextView title;
@@ -121,8 +123,7 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
     public void initView(){
         toolbar = (Toolbar) findViewById(R.id.tl_custom);
         toolbar.setTitleTextColor(Color.parseColor("#ffffff")); //设置标题颜色
-        toolbar.setTitleTextColor(Color.parseColor("#ffffff")); //设置标题颜色
-
+        toolbar.setTitle("");//设置Toolbar标题
         setSupportActionBar(toolbar);
         getSupportActionBar().getThemedContext();
         getSupportActionBar().setHomeButtonEnabled(true); //设置返回键可用
@@ -143,7 +144,9 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
         average = (TextView) findViewById(R.id.card_average);
         isbn13 = (TextView) findViewById(R.id.card_isbn13);
         note_button = (Button) findViewById(R.id.card_button_note);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         addBookFab.attachToScrollView(scrollView);
+        progressBar.setVisibility(View.VISIBLE);
     }
 
     //判断是从搜索页面跳转过来的还是扫描页面跳转过来的
@@ -164,13 +167,14 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
             @Override
             public void onResponse(JSONObject jsonObject) {
                 bookInfo = myJson.jsonObjectBookIsbn(jsonObject);
-//                    Toast.makeText(BookInfoActivity.this, "图书不存在",Toast.LENGTH_SHORT).show();
                     toolbar.setTitle(bookInfo.getTitle());//设置Toolbar标题
+                progressBar.setVisibility(View.GONE);
                     changceView();
             }
         },new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
+                progressBar.setVisibility(View.GONE);
                 Toast.makeText(BookInfoActivity.this, "图书不存在或无网络连接",Toast.LENGTH_LONG).show();
                 Log.e("TAG", volleyError.toString());
                 BookInfoActivity.this.finish();
@@ -180,15 +184,6 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
     }
 
     public void changceView(){
-        ImageLoader.getInstance().loadImage(bookInfo.getImage(), new SimpleImageLoadingListener(){
-            @Override
-            public void onLoadingComplete(String imageUri, View view,
-                                          Bitmap loadedImage) {
-                super.onLoadingComplete(imageUri, view, loadedImage);
-                book_image.setImageBitmap(loadedImage);
-            }
-
-        });
         author.setText(bookInfo.getAuthor());
         publisher.setText(bookInfo.getPublisher());
         pubdate.setText(bookInfo.getPubdate());
@@ -200,6 +195,16 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
         tags.setText(bookInfo.getTags());
         average.setText(bookInfo.getRating().getAverage()+"分");
         isbn13.setText(bookInfo.getIsbn13());
+        ImageLoader.getInstance().loadImage(bookInfo.getImage(), new SimpleImageLoadingListener(){
+            @Override
+            public void onLoadingComplete(String imageUri, View view,
+                                          Bitmap loadedImage) {
+                super.onLoadingComplete(imageUri, view, loadedImage);
+                book_image.setImageBitmap(loadedImage);
+            }
+
+        });
+        scrollView.setVisibility(View.VISIBLE);
     }
 
     @Override
