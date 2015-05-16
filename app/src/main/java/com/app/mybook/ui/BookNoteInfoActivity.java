@@ -98,7 +98,13 @@ public class BookNoteInfoActivity extends ActionBarActivity {
                         ActiveAndroid.endTransaction();
                     }
                 }else{
-                    Toast.makeText(BookNoteInfoActivity.this, "不能重复加入评论收藏哦~~", Toast.LENGTH_SHORT).show();
+                    try {
+                        BookListNote.delete(BookListNote.class, bookListNoteTemp.getId());
+                    }catch (Exception e){
+                        Toast.makeText(BookNoteInfoActivity.this, "取消失败，错误信息:"+e.toString(), Toast.LENGTH_LONG).show();
+                        Log.e("TAG",e.toString());
+                    }
+                    Toast.makeText(BookNoteInfoActivity.this, "已取消收藏", Toast.LENGTH_SHORT).show();
                 }
             }
         });
