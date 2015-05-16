@@ -112,7 +112,13 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
                         ActiveAndroid.endTransaction();
                     }
                 }else{
-                    Toast.makeText(BookInfoActivity.this, "不能重复加入收藏哦~~", Toast.LENGTH_SHORT).show();
+                    try {
+                        BookInfo.delete(BookInfo.class, bookInfoTemp.getId());
+                    }catch (Exception e){
+                        Toast.makeText(BookInfoActivity.this, "取消失败，错误信息:"+e.toString(), Toast.LENGTH_LONG).show();
+                        Log.e("TAG",e.toString());
+                    }
+                    Toast.makeText(BookInfoActivity.this, "已取消收藏", Toast.LENGTH_SHORT).show();
                 }
                 break;
             }
