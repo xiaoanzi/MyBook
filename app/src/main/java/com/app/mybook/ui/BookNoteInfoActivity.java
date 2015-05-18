@@ -100,11 +100,11 @@ public class BookNoteInfoActivity extends ActionBarActivity {
                 }else{
                     try {
                         BookListNote.delete(BookListNote.class, bookListNoteTemp.getId());
+                        Toast.makeText(BookNoteInfoActivity.this, "已取消收藏", Toast.LENGTH_SHORT).show();
                     }catch (Exception e){
                         Toast.makeText(BookNoteInfoActivity.this, "取消失败，错误信息:"+e.toString(), Toast.LENGTH_LONG).show();
                         Log.e("TAG",e.toString());
                     }
-                    Toast.makeText(BookNoteInfoActivity.this, "已取消收藏", Toast.LENGTH_SHORT).show();
                 }
             }
         });
