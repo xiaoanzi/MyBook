@@ -114,11 +114,11 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
                 }else{
                     try {
                         BookInfo.delete(BookInfo.class, bookInfoTemp.getId());
+                        Toast.makeText(BookInfoActivity.this, "已取消收藏", Toast.LENGTH_SHORT).show();
                     }catch (Exception e){
                         Toast.makeText(BookInfoActivity.this, "取消失败，错误信息:"+e.toString(), Toast.LENGTH_LONG).show();
                         Log.e("TAG",e.toString());
                     }
-                    Toast.makeText(BookInfoActivity.this, "已取消收藏", Toast.LENGTH_SHORT).show();
                 }
                 break;
             }
