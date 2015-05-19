@@ -39,12 +39,10 @@ public class BookCollect extends ActionBarActivity {
         mFlexibleSpaceOffset = getResources().getDimensionPixelSize(R.dimen.header_height);
         initView();
         bookInfoList = new Select().from(BookInfo.class).execute();
-
-        setUpRecyclerView();
         if(bookInfoList.size() == 0) {
             Toast.makeText(BookCollect.this,"没有收藏的图书",Toast.LENGTH_SHORT).show();
-            return;
         }
+        setUpRecyclerView();
     }
 
     private void initView() {
