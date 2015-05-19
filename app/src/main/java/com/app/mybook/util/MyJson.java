@@ -18,8 +18,6 @@ import java.util.List;
  */
 public class MyJson {
     public static List<BookInfo> bookSearchList = new ArrayList<BookInfo>();
-    public static BookInfo bookInfo = new BookInfo();
-    public static Rating rating1 = new Rating();
     public static List<BookListNote> bookListNoteList = new ArrayList<BookListNote>();
 
     //解析搜索图书返回回来的数据
@@ -56,6 +54,7 @@ public class MyJson {
                 }
                 bookSearch.setTranslator(translator);
                 JSONObject rating = temp.getJSONObject("rating");
+                Rating rating1 = new Rating();
                 rating1.setNumRaters(rating.getString("numRaters"));
                 rating1.setAverage(rating.getString("average"));
                 bookSearch.setRating(rating1);
@@ -71,8 +70,8 @@ public class MyJson {
 
     //解析某本图书具体信息返回回来的数据
     public static BookInfo jsonObjectBookIsbn(JSONObject jsonObject){
+        BookInfo bookInfo = new BookInfo();
         try {
-//            bookInfo.setCode(jsonObject.get("code").toString());
             bookInfo.setIsbn13(jsonObject.get("isbn13").toString());
             String tags = "";
             JSONArray jsonArrayTemp = (jsonObject.getJSONArray("tags"));
@@ -105,9 +104,10 @@ public class MyJson {
             bookInfo.setImage(jsonObject.get("image").toString());
 
             JSONObject rating = jsonObject.getJSONObject("rating");
-            rating1.setNumRaters(rating.getString("numRaters"));
-            rating1.setAverage(rating.getString("average"));
-            bookInfo.setRating(rating1);
+            Rating rating2 = new Rating();
+            rating2.setNumRaters(rating.getString("numRaters"));
+            rating2.setAverage(rating.getString("average"));
+            bookInfo.setRating(rating2);
         }catch (Exception e){
             bookInfo = null;
             Log.e("tag",e.toString());
