@@ -25,7 +25,6 @@ import com.android.volley.toolbox.Volley;
 import com.app.mybook.R;
 import com.app.mybook.api.Api;
 import com.app.mybook.model.BookInfo;
-import com.app.mybook.model.Rating;
 import com.app.mybook.util.MyImageLoader;
 import com.app.mybook.util.MyJson;
 import com.melnykov.fab.FloatingActionButton;
@@ -40,7 +39,7 @@ import org.json.JSONObject;
  */
 public class BookInfoActivity extends ActionBarActivity implements View.OnClickListener{
     private Toolbar toolbar;
-    private BookInfo bookInfo = new BookInfo();
+    private BookInfo bookInfo;
     private RequestQueue mQueue;
     private MyImageLoader myImageLoader;
     MyJson myJson = new MyJson();
@@ -73,6 +72,7 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
         mQueue = Volley.newRequestQueue(this);
         myImageLoader = new MyImageLoader();
         myImageLoader.getImageLoaderConfiguration();
+        bookInfo = new BookInfo();
         isIsbn = getIntent().getBooleanExtra("isIsbn",false);
         initView();
         initIntent();
@@ -96,14 +96,14 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
                         .where("bookSearchId = ?", bookInfo.getBookSearchId())
                         .executeSingle();
                 if(bookInfoTemp == null){
-                    Rating rating = new Rating();
-                    rating = bookInfo.getRating();
+//                    Rating rating = new Rating();
+//                    rating = bookInfo.getRating();
                     ActiveAndroid.beginTransaction();
                     try {
-                        rating.save();
+                        bookInfo.saveRating();
                         bookInfo.save();
                         ActiveAndroid.setTransactionSuccessful();
-                        Toast.makeText(BookInfoActivity.this, "已加入收藏", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(BookInfoActivity.this, "已加入收藏~~", Toast.LENGTH_SHORT).show();
                     }catch (Exception e){
                         Toast.makeText(BookInfoActivity.this, "加入失败，错误信息:"+e.toString(), Toast.LENGTH_LONG).show();
                         Log.e("TAG",e.toString());
@@ -112,7 +112,13 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
                         ActiveAndroid.endTransaction();
                     }
                 }else{
-                    Toast.makeText(BookInfoActivity.this, "不能重复加入收藏哦~~", Toast.LENGTH_SHORT).show();
+                    try {
+                        BookInfo.delete(BookInfo.class, bookInfoTemp.getId());
+                        Toast.makeText(BookInfoActivity.this, "已取消收藏", Toast.LENGTH_SHORT).show();
+                    }catch (Exception e){
+                        Toast.makeText(BookInfoActivity.this, "取消失败，错误信息:"+e.toString(), Toast.LENGTH_LONG).show();
+                        Log.e("TAG",e.toString());
+                    }
                 }
                 break;
             }
@@ -167,7 +173,7 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
             @Override
             public void onResponse(JSONObject jsonObject) {
                 bookInfo = myJson.jsonObjectBookIsbn(jsonObject);
-                    toolbar.setTitle(bookInfo.getTitle());//设置Toolbar标题
+                toolbar.setTitle(bookInfo.getTitle());//设置Toolbar标题
                 progressBar.setVisibility(View.GONE);
                     changceView();
             }
@@ -209,6 +215,8 @@ public class BookInfoActivity extends ActionBarActivity implements View.OnClickL
 
     @Override
     protected void onDestroy() {
+        bookInfo = null;
+        Log.e("TAG", "xiaohuilelellelelele");
         super.onDestroy();
     }
 

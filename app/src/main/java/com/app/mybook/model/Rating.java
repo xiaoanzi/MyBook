@@ -16,6 +16,9 @@ public class Rating extends Model implements Serializable{
     @Column(name = "average")
     private String average; //图书的评分
 
+    public Rating(){
+        super();
+    }
     public String getNumRaters() {
         return numRaters;
     }

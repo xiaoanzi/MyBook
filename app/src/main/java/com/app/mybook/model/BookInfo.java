@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Table(name = "bookInfo")
 public class BookInfo extends Model implements Serializable{
     @Column(name = "bookSearchId")
-    private String bookSearchId;  //书店ID
+    private String bookSearchId;  //书的ID
     @Column(name = "isbn10")
     private String isbn10;  //书的isbn10编码
     @Column(name = "isbn13")
@@ -44,6 +44,14 @@ public class BookInfo extends Model implements Serializable{
     @Column(name = "catalog")
     private String catalog; //目录
 
+    public BookInfo(){
+        super();
+    }
+    public void saveRating() {
+        if (rating != null) {
+            rating.save();
+        }
+    }
     public String getBookSearchId() {
         return bookSearchId;
     }
